@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
-PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog"
-PLUGIN.Version		= "1.12.01"
+PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog, EasyAnnouncer"
+PLUGIN.Version		= "1.12.02"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -23,6 +23,7 @@ print( "Initialize functions..." )
 	#	BaseAttackAlert		- It alerts you if your base will be attacked and show you the attacker.	#
 	#	DeathLog			- DeathLog creates a txt file which allows you to review all deaths.		#
 	#	ChatLog				- ChatLog is a function to save the server chat into a file.				#
+	#	EasyAnnouncer		- An automated message shown in chat every 5 minutes.						#
 	#																									#
 	#	Functions in development:																		#
 	#	EasySuicide			- Chat Command to suicide.													#
@@ -97,10 +98,20 @@ function PLUGIN:Init()
 			},
 			["ChatLog"] = {
 				["enabled"] = "true"
+			},
+			["EasyAnnouncer"] = {
+				["enabled"] = "true",
+				["message"] = "Type /help to show commands in chat.",
 			}
 		}
 		self:SaveSettings()
 	end
+
+	-- EasyAnnouncer
+	self:timer.Repeat("300", self.EasyAnnouncer)
+	self:AddChatCommand("announce.enable", self.enableEasyAnnouncer)
+	self:AddChatCommand("announce.disable", self.disableEasyAnnouncer)
+	self:AddChatCommand("announce", self.changeEasyAnnouncerMessage)
 
 	-- Change ChatName Chat Command
 	self:AddChatCommand("chatname", self.changeChatName)
@@ -495,6 +506,15 @@ end
 --print ( functioncounter .. " - EasySuicide function loaded...")
 
 -- PLUGINS WITHOUT Commands
+-- EasyAnnouncer
+function PLUGIN:EasyAnnouncer( netUser )
+	if (self.settingsText["EasyAnnouncer"]["enabled"] == "true") then
+		rust.BroadcastChat(self.settingsText["PluginSettings"]["chatName"], self.settingsText["EasyAnnouncer"]["Message"])
+	end
+end
+functioncounter = functioncounter + 1
+print ( functioncounter .. " - EasyAnnouncer function loaded...")
+
 -- DeathLog Save
 function PLUGIN:deathLogSave( netUser )
 	self.deathLogDataFile:SetText( self.deathLogText )
@@ -520,6 +540,21 @@ print ( functioncounter .. " - ChatLog function loaded...")
 function PLUGIN:chatLogSave( netUser )
 	self.chatLogDataFile:SetText( self.chatLogText )
 	self.chatLogDataFile:Save()
+end
+
+-- EasyAnnouncer Save
+function PLUGIN:changeEasyAnnouncerMessage( netUser, cmd, args)
+	if (netUser:CanAdmin()) then
+		if (args[1]) then
+			self.settingsText["EasyAnnouncer"]["message"] = args[1]
+			self:SaveSettings()
+			rust.Notice( netUser, "EasyAnnouncer message changed." )
+		else
+			rust.Notice( netUser, "Syntax: /announce \"Message\"" )
+		end
+	else
+		rust.Notice( netUser, "You do not have permission to use this command!" )
+	end
 end
 
 -- BaseAttackAlert / DeathLog
@@ -846,6 +881,27 @@ function PLUGIN:disableChatLog( netUser )
 	end
 	rust.Notice(netUser, "ChatLog disabled.")
 	self.settingsText["ChatLog"]["enabled"] = "false"
+	self:SaveSettings()
+end
+
+-- enable EasyAnnouncer through Chat
+function PLUGIN:enableEasyAnnouncer( netUser )
+	if (not(netUser:CanAdmin())) then
+		rust.Notice(netUser, "You do not have permission to use this command!")
+		return
+	end
+	rust.Notice(netUser, "EasyAnnouncer enabled.")
+	self.settingsText["EasyAnnouncer"]["enabled"] = "true"
+	self:SaveSettings()
+end
+-- disable EasyAnnouncer through Chat
+function PLUGIN:disableEasyAnnouncer( netUser )
+	if (not(netUser:CanAdmin())) then
+		rust.Notice(netUser, "You do not have permission to use this command!")
+		return
+	end
+	rust.Notice(netUser, "EasyAnnouncer disabled.")
+	self.settingsText["EasyAnnouncer"]["enabled"] = "false"
 	self:SaveSettings()
 end
 
