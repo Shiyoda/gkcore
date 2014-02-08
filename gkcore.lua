@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
 PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog"
-PLUGIN.Version		= "1.12.00"
+PLUGIN.Version		= "1.12.01"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -178,6 +178,9 @@ function PLUGIN:Init()
 	else
 		self.chatLogText = ""
 	end
+
+	-- Server Time Zone Correction for Log Files
+	self:AddChatCommand("/timezone", self.changeTimeZone)
 end
 
 -- Reloads the plugin via console
@@ -466,6 +469,20 @@ function PLUGIN:GetUserDataFromID( userID, name )
 		self:adminSave()
 	end
 	return userentry
+end
+
+function PLUGIN:changeTimeZone( netUser, cmd, args )
+	if (netUser:CanAdmin()) then
+		if (args[1] and args[2] and (args[1] == "add" or args[1] == "sub")) then
+			self.settingsText["GetTime"]["addsub"] = args[1]
+			self.settingsText["GetTime"]["timediff"] = args[2]
+			self:SaveSettings()
+		else
+			rust.Notice( netUser, "Syntax: /timezone \"add/sub\" \"number of hours\" " )
+		end
+	else
+		rust.Notice( netUser, "You do not have permission to use this command!" )
+	end
 end
 
 -- EasySuicide
