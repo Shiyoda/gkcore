@@ -477,6 +477,7 @@ function PLUGIN:changeTimeZone( netUser, cmd, args )
 			self.settingsText["GetTime"]["addsub"] = args[1]
 			self.settingsText["GetTime"]["timediff"] = args[2]
 			self:SaveSettings()
+			rust.Notice( netUser, "Time Zone changed." )
 		else
 			rust.Notice( netUser, "Syntax: /timezone \"add/sub\" \"number of hours\" " )
 		end
