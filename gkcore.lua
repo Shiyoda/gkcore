@@ -180,7 +180,7 @@ function PLUGIN:Init()
 	end
 
 	-- Server Time Zone Correction for Log Files
-	self:AddChatCommand("/timezone", self.changeTimeZone)
+	self:AddChatCommand("timezone", self.changeTimeZone)
 end
 
 -- Reloads the plugin via console
