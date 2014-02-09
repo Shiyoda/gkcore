@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
 PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog, EasyAnnouncer"
-PLUGIN.Version		= "1.12.02"
+PLUGIN.Version		= "1.13.00"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -146,7 +146,7 @@ function PLUGIN:Init()
 	self:AddChatCommand("time.disable", self.disableRustClock)
 
 	-- EasyServerSaver Chat Command
-	self:AddChatCommand("save", self.EasySeverSaver)
+	self:AddChatCommand("save", self.EasyServerSaver)
 	self:AddChatCommand("save.enable", self.enableEasyServerSaver)
 	self:AddChatCommand("save.disable", self.disableEasyServerSaver)
 
@@ -650,31 +650,37 @@ function PLUGIN:getTime()
 	local ampm = dateTime[3]
 	local dateParts = self:stringExplode( "/", date )
 	local timeParts = self:stringExplode( ":", time )
-	if ampm == "PM:" then timeParts[1] = tonumber( timeParts[1] ) + 12 end
+
+	local checktime = tonumber( timeParts[1] )
+
+	if ampm == "PM:" then 
+		checktime = checktime + 12
+	end
 
 	-- CORRECT TIME ZONE: vars addsub and timediff are at the top of the plugin
 	if (self.settingsText["GetTime"]["addsub"] and self.settingsText["GetTime"]["timediff"]) then
 		if (self.settingsText["GetTime"]["addsub"] == "add") then
-			timeParts[1] = timeParts[1] + self.settingsText["GetTime"]["timediff"]
-			if (timeParts[1] > 24) then
-				timeParts[1] = timeParts[1] - 24
+			checktime = checktime + self.settingsText["GetTime"]["timediff"]
+			if (checktime > 24) then
+				checktime = checktime - 24
 				dateParts[2] = dateParts[2] + 1
 			end
 		elseif (self.settingsText["GetTime"]["addsub"] == "sub") then
-			timeParts[1] = timeParts[1] - self.settingsText["GetTime"]["timediff"]
-			if (timeParts[1] < 0) then
-				timeParts[1] = timeParts[1] + 24
+			checktime = checktime - self.settingsText["GetTime"]["timediff"]
+			if (checktime < 0) then
+				checktime = checktime + 24
 				dateParts[2] = dateParts[2] - 1
 			end
 		end
 
-		if (timeParts[1] < 12) then
+		if (checktime < 12) then
 			ampm = "AM:"
 		else
 			ampm = "PM:"
 		end
 	end
 
+	timeParts[1] = tostring( checktime )
 	date = table.concat( { dateParts[2], dateParts[1], dateParts[3] }, "." )
 	time = table.concat( timeParts, ":" )
 	return "[" .. date .. " " .. time .. "]"
