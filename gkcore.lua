@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
 PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog, EasyAnnouncer"
-PLUGIN.Version		= "1.13.00"
+PLUGIN.Version		= "1.13.01"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -100,18 +100,20 @@ function PLUGIN:Init()
 				["enabled"] = "true"
 			},
 			["EasyAnnouncer"] = {
-				["enabled"] = "true",
+				["enabled"] = "false",
 				["message"] = "Type /help to show commands in chat.",
 			}
 		}
 		self:SaveSettings()
 	end
 
-	--[[ EasyAnnouncer
-	timer.Repeat("300", self:EasyAnnouncer())
-	self:AddChatCommand("announce.enable", self.enableEasyAnnouncer)
-	self:AddChatCommand("announce.disable", self.disableEasyAnnouncer)
-	self:AddChatCommand("announce", self.changeEasyAnnouncerMessage)]]
+	-- EasyAnnouncer
+	--self.myTimer = timer.Repeat(20, 0, function() self:EasyAnnouncer() end)
+	--self:AddChatCommand("announce.enable", self.enableEasyAnnouncer)
+	--self:AddChatCommand("announce.disable", self.disableEasyAnnouncer)
+	--self:AddChatCommand("announce", self.changeEasyAnnouncerMessage)
+	--self:AddChatCommand("announce.stop", self.stopEasyAnnouncer)
+	--self:AddChatCommand("announce.start", self.startEasyAnnouncer)
 
 	-- Change ChatName Chat Command
 	self:AddChatCommand("chatname", self.changeChatName)
@@ -332,7 +334,7 @@ function PLUGIN:OnUserConnect( netUser )
 		else
 			rust.BroadcastChat(self.settingsText["PluginSettings"]["chatName"], "Player " .. netUser.displayName .. " joined the server.")
 		end
-		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Welcome" .. netUser.displayName .. "!" ) .. "\"" )
+		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Welcome " .. netUser.displayName .. "!" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Server Settings:" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "DoorShare, EasyPlayerList, RustClock, BaseAttackAlert, MotD" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Airdrops at 8 Players, Sleepers On, Commands /help" ) .. "\"" )
@@ -372,8 +374,8 @@ print( functioncounter .. " - RustClock function loaded..." )
 
 -- RustClock Round
 function PLUGIN:round( num, idp )
-  local mult = 10^(idp or 0)
-  return math.floor(num * mult + 0.5) / mult
+	local mult = 10^(idp or 0)
+	return math.floor(num * mult + 0.5) / mult
 end
 
 -- EasyServerSaver
@@ -482,6 +484,7 @@ function PLUGIN:GetUserDataFromID( userID, name )
 	return userentry
 end
 
+-- Timezone Changer
 function PLUGIN:changeTimeZone( netUser, cmd, args )
 	if (netUser:CanAdmin()) then
 		if (args[1] and args[2] and (args[1] == "add" or args[1] == "sub")) then
@@ -497,8 +500,28 @@ function PLUGIN:changeTimeZone( netUser, cmd, args )
 	end
 end
 
+-- EasyAnnouncer Stop
+--function PLUGIN:stopEasyAnnouncer( netUser )
+--	if (netUser:CanAdmin()) then
+--			self.myTimer:Destroy()
+--			rust.Notice( netUser, "EasyAnnouncer stopped." )
+--	else
+--		rust.Notice( netUser, "You do not have permission to use this command!" )
+--	end
+--end
+
+-- EasyAnnouncer Start
+--function PLUGIN:startEasyAnnouncer( netUser )
+--	if (netUser:CanAdmin()) then
+--			self.myTimer = timer.Repeat(20, 0, function() self:EasyAnnouncer() end)
+--			rust.Notice( netUser, "EasyAnnouncer started." )
+--	else
+--		rust.Notice( netUser, "You do not have permission to use this command!" )
+--	end
+--end
+
 -- EasySuicide
---function PLUGIN:doSuicide( netUser )
+--function PLUGIN:doSuicide( netUser, cmd )
 -- 	rust.RunClientCommand( netUser, "suicide" )
 -- 	rust.Notice ( netUser, "Suicided!" )
 --end
@@ -506,14 +529,15 @@ end
 --print ( functioncounter .. " - EasySuicide function loaded...")
 
 -- PLUGINS WITHOUT Commands
---[[ EasyAnnouncer
-function PLUGIN:EasyAnnouncer( netUser )
-	if (self.settingsText["EasyAnnouncer"]["enabled"] == "true") then
-		rust.BroadcastChat(self.settingsText["PluginSettings"]["chatName"], self.settingsText["EasyAnnouncer"]["Message"])
-	end
-end
-functioncounter = functioncounter + 1
-print ( functioncounter .. " - EasyAnnouncer function loaded...")]]
+-- EasyAnnouncer
+--function PLUGIN:EasyAnnouncer( netUser )
+--	if (self.settingsText["EasyAnnouncer"]["enabled"] == "true") then
+--		rust.RunClientCommand( netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( self.settingsText["EasyAnnouncer"]["Message"] ) .. "\"" )
+--		print(self.settingsText["EasyAnnouncer"]["Message"])
+--	end
+--end
+--functioncounter = functioncounter + 1
+--print ( functioncounter .. " - EasyAnnouncer function loaded...")
 
 -- DeathLog Save
 function PLUGIN:deathLogSave( netUser )
@@ -542,20 +566,20 @@ function PLUGIN:chatLogSave( netUser )
 	self.chatLogDataFile:Save()
 end
 
---[[ EasyAnnouncer Save
-function PLUGIN:changeEasyAnnouncerMessage( netUser, cmd, args)
-	if (netUser:CanAdmin()) then
-		if (args[1]) then
-			self.settingsText["EasyAnnouncer"]["message"] = args[1]
-			self:SaveSettings()
-			rust.Notice( netUser, "EasyAnnouncer message changed." )
-		else
-			rust.Notice( netUser, "Syntax: /announce \"Message\"" )
-		end
-	else
-		rust.Notice( netUser, "You do not have permission to use this command!" )
-	end
-end]]
+-- EasyAnnouncer Save
+--function PLUGIN:changeEasyAnnouncerMessage( netUser, cmd, args)
+--	if (netUser:CanAdmin()) then
+--		if (args[1]) then
+--			self.settingsText["EasyAnnouncer"]["message"] = args[1]
+--			self:SaveSettings()
+--			rust.Notice( netUser, "EasyAnnouncer message changed." )
+--		else
+--			rust.Notice( netUser, "Syntax: /announce \"Message\"" )
+--		end
+--	else
+--		rust.Notice( netUser, "You do not have permission to use this command!" )
+--	end
+--end
 
 -- BaseAttackAlert / DeathLog
 function PLUGIN:OnKilled( takedamage, damage )
@@ -890,26 +914,26 @@ function PLUGIN:disableChatLog( netUser )
 	self:SaveSettings()
 end
 
---[[ enable EasyAnnouncer through Chat
-function PLUGIN:enableEasyAnnouncer( netUser )
-	if (not(netUser:CanAdmin())) then
-		rust.Notice(netUser, "You do not have permission to use this command!")
-		return
-	end
-	rust.Notice(netUser, "EasyAnnouncer enabled.")
-	self.settingsText["EasyAnnouncer"]["enabled"] = "true"
-	self:SaveSettings()
-end
+-- enable EasyAnnouncer through Chat
+--function PLUGIN:enableEasyAnnouncer( netUser )
+--	if (not(netUser:CanAdmin())) then
+--		rust.Notice(netUser, "You do not have permission to use this command!")
+--		return
+--	end
+--	rust.Notice(netUser, "EasyAnnouncer enabled.")
+--	self.settingsText["EasyAnnouncer"]["enabled"] = "true"
+--	self:SaveSettings()
+--end
 -- disable EasyAnnouncer through Chat
-function PLUGIN:disableEasyAnnouncer( netUser )
-	if (not(netUser:CanAdmin())) then
-		rust.Notice(netUser, "You do not have permission to use this command!")
-		return
-	end
-	rust.Notice(netUser, "EasyAnnouncer disabled.")
-	self.settingsText["EasyAnnouncer"]["enabled"] = "false"
-	self:SaveSettings()
-end]]
+--function PLUGIN:disableEasyAnnouncer( netUser )
+--	if (not(netUser:CanAdmin())) then
+--		rust.Notice(netUser, "You do not have permission to use this command!")
+--		return
+--	end
+--	rust.Notice(netUser, "EasyAnnouncer disabled.")
+--	self.settingsText["EasyAnnouncer"]["enabled"] = "false"
+--	self:SaveSettings()
+--end
 
 print( functioncounter .. " functions loaded")
 print( "Plugin is ready to use" )
