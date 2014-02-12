@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
 PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog, EasyAnnouncer"
-PLUGIN.Version		= "1.13.01"
+PLUGIN.Version		= "1.13.02"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -141,6 +141,7 @@ function PLUGIN:Init()
 	self:AddChatCommand("list", self.EasyPlayerList)
 	self:AddChatCommand("list.enable", self.enableEasyPlayerList)
 	self:AddChatCommand("list.disable", self.disableEasyPlayerList)
+	self:AddChatCommand("list.ppl", self.eplMaxPlayersPerLine)
 
 	-- RustClock Chat Command
 	self:AddChatCommand("time", self.RustClock)
@@ -500,6 +501,21 @@ function PLUGIN:changeTimeZone( netUser, cmd, args )
 	end
 end
 
+-- EasyPlayerList MaxPlayersPerLine
+function PLUGIN:changeTimeZone( netUser, cmd, args )
+	if (netUser:CanAdmin()) then
+		if (args[1] and (args[1] => 1 and args[1] =< 10)) then
+			self.settingsText["EasyPlayerList"]["MaxPlayersPerLine"] = args[1]
+			self:SaveSettings()
+			rust.Notice( netUser, "EasyPlayerList max players per line changed to" .. args[1] .. "." )
+		else
+			rust.Notice( netUser, "Syntax: /list.ppl \"number between 1 and 10\" " )
+		end
+	else
+		rust.Notice( netUser, "You do not have permission to use this command!" )
+	end
+end
+
 -- EasyAnnouncer Stop
 --function PLUGIN:stopEasyAnnouncer( netUser )
 --	if (netUser:CanAdmin()) then
@@ -685,7 +701,7 @@ function PLUGIN:getTime()
 	if (self.settingsText["GetTime"]["addsub"] and self.settingsText["GetTime"]["timediff"]) then
 		if (self.settingsText["GetTime"]["addsub"] == "add") then
 			checktime = checktime + self.settingsText["GetTime"]["timediff"]
-			if (checktime > 24) then
+			if (checktime > 23) then
 				checktime = checktime - 24
 				dateParts[2] = dateParts[2] + 1
 			end
@@ -717,11 +733,12 @@ function PLUGIN:changeChatName( netUser, cmd, args )
 		return
 	end
 	if (not args[1]) then
-		rust.Notice( netuser, "Syntax: /chatname name" )
+		rust.Notice( netuser, "Syntax: /chatname \"NAME\"" )
 		return
 	end
 	self.settingsText["PluginSettings"]["chatName"] = args[1]
 	self:SaveSettings()
+	rust.Notice( netUser, "ChatName changed to" .. args[1] .. "." )
 end
 
 -- Activate/Deactivate Functions
