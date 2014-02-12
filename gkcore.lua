@@ -1,5 +1,5 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
-PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerlist, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog, EasyAnnouncer"
+PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerList, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog"
 PLUGIN.Version		= "1.13.02"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
@@ -167,6 +167,9 @@ function PLUGIN:Init()
 		self.AdminData = {}
 	end
 
+	-- EasyPluginList
+	self:AddChatCommand("plugins", self.EasyPluginList)
+
 	-- EasySuicide
 	--self:AddChatCommand("suicide", self.doSuicide)
 
@@ -293,12 +296,12 @@ function PLUGIN:EasyPlayerList( netUser, cmd, args )
 			for i=1, playercounter, 1 do
 				if(players < maxpPL) then
 					plcmsg = plcmsg .. util.QuoteSafe(playerlist[i].displayName) .. ", "
-					players=players+1
+					players = players + 1
 				else
 					plcmsg = string.sub(plcmsg,1,string.len(plcmsg)-2)
 					rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( plcmsg ) .. "\"" )
 					plcmsg = util.QuoteSafe(playerlist[i].displayName .. ", ")
-					players=1
+					players = 1
 				end
 			end
 			plcmsg = string.sub(plcmsg,1,string.len(plcmsg)-2)
@@ -310,6 +313,89 @@ function PLUGIN:EasyPlayerList( netUser, cmd, args )
 end
 functioncounter = functioncounter + 1
 print( functioncounter .. " - EasyPlayerList function loaded..." )
+
+-- EasyPluginList
+function PLUGIN:EasyPluginList( netUser, cmd, args )
+	local maxplugins = 5
+	local plugincounter = 0
+	local pluginlist = ""
+	local plugins = 0
+	local pluginmsg = ""
+	if (self.settingsText["EasyPlayerList"]["enabled"] == "true") then
+		pluginlist = pluginlist .. "EasyPlayerList" .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (self.settingsText["RustClock"]["enabled"] == "true") then
+		pluginlist = pluginlist .. "RustClock" .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (self.settingsText["Help"]["enabled"] == "true") then
+		pluginlist = pluginlist .. "Help" .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (self.settingsText["MotD"]["enabled"] == "true") then
+		pluginlist = pluginlist .. "MotD" .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (self.settingsText["BaseAttackAlert"]["enabled"] == "true") then
+		pluginlist = pluginlist .. "BaseAttackAlert" .. ","
+		plugincounter = plugincounter + 1
+	end
+
+	pluginlist = pluginlist .. "DoorShare"
+	plugincounter = plugincounter + 1
+
+	if (netUser:CanAdmin()) then
+		local adminpluginlist = ""
+		if (self.settingsText["EasyAdminRights"]["enabled"] == "true") then
+			adminpluginlist = adminpluginlist .. "EasyAdminRights" .. ","
+			plugincounter = plugincounter + 1
+		end
+		if (self.settingsText["EasyServerSaver"]["enabled"] == "true") then
+			adminpluginlist = adminpluginlist .. "EasyServerSaver" .. ","
+			plugincounter = plugincounter + 1
+		end
+		if (self.settingsText["AdminHelp"]["enabled"] == "true") then
+			adminpluginlist = adminpluginlist .. "AdminHelp" .. ","
+			plugincounter = plugincounter + 1
+		end
+		if (self.settingsText["DeathLog"]["enabled"] == "true") then
+			adminpluginlist = adminpluginlist .. "DeathLog" .. ","
+			plugincounter = plugincounter + 1
+		end
+		if (self.settingsText["ChatLog"]["enabled"] == "true") then
+			adminpluginlist = adminpluginlist .. "ChatLog" .. ","
+			plugincounter = plugincounter + 1
+		end
+
+		if (adminpluginlist ~= "") then
+			pluginlist = pluginlist .. "," .. adminpluginlist
+			pluginlist = string.sub(pluginlist,1,string.len(pluginlist)-1)
+		end
+	end
+
+	pluginlist = self:stringExplode( ",", tostring( pluginlist ) )
+
+	if(plugincounter >= 1) then
+		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. plugincounter .. " Active Plugin(s):\"" )
+		for i=1, plugincounter, 1 do
+			if(plugins < maxplugins) then
+				pluginmsg = pluginmsg .. util.QuoteSafe(pluginlist[i]) .. ", "
+				plugins = plugins + 1
+			else
+				pluginmsg = string.sub(pluginmsg,1,string.len(pluginmsg)-2)
+				rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( pluginmsg ) .. "\"" )
+				pluginmsg = util.QuoteSafe(pluginlist[i] .. ", ")
+				plugins = 1
+			end
+		end
+		pluginmsg = string.sub(pluginmsg,1,string.len(pluginmsg)-2)
+		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( pluginmsg ) .. "\"" )
+	end
+end
+functioncounter = functioncounter + 1
+print( functioncounter .. " - EasyPluginList function loaded..." )
+
 
 -- Save Gamekeller Settings
 function PLUGIN:SaveSettings()
@@ -504,7 +590,7 @@ end
 -- EasyPlayerList MaxPlayersPerLine
 function PLUGIN:changeTimeZone( netUser, cmd, args )
 	if (netUser:CanAdmin()) then
-		if (args[1] and (args[1] => 1 and args[1] =< 10)) then
+		if (args[1] and (args[1] >= 1 and args[1] <= 10)) then
 			self.settingsText["EasyPlayerList"]["MaxPlayersPerLine"] = args[1]
 			self:SaveSettings()
 			rust.Notice( netUser, "EasyPlayerList max players per line changed to" .. args[1] .. "." )
