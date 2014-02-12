@@ -232,6 +232,7 @@ function PLUGIN:Help( netUser )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/unshare Name - Remove Player from DoorShare-List" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/list - Shows Online Players" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/time - Shows Game Time" ) .. "\"" )
+		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/plugins - Shows active plugins" ) .. "\"" )
 		if (netUser:CanAdmin()) then
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/adminhelp - Shows admin commands" ) .. "\"" )
 		end
@@ -252,18 +253,20 @@ function PLUGIN:AdminHelp( netUser )
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/giveadmin Name - Give Admin Rights to Player" ) .. "\"" )
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/remadmin Name - Remove Admin Rights from Player" ) .. "\"" )
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/chatname Name - Change the Server Chatname" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/timezone add/sub 'number of hours' - Add/Sub hours to current timezone for logs" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/list.ppl Number - Change max players per line in EasyPlayerList" ) .. "\"" )
 
 			-- Function enable/disable commands
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Write enable or disable after the dot in these commands:" ) .. "\"" )
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/admin.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/list.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/baa.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/help.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/adminhelp.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/save.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/chatlog.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/deathlog.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
-			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/chatname.enable/disable - Enable/Disable EasyAdminRights" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/list.enable/disable - Enable/Disable EasyPlayerList" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/baa.enable/disable - Enable/Disable BaseAttackAlert" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/help.enable/disable - Enable/Disable Help" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/adminhelp.enable/disable - Enable/Disable AdminHelp" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/save.enable/disable - Enable/Disable EasyServerSaver" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/chatlog.enable/disable - Enable/Disable ChatLog" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/deathlog.enable/disable - Enable/Disable DeathLog" ) .. "\"" )
+			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/chatname.enable/disable - Enable/Disable ChatNameChanger" ) .. "\"" )
 
 			-- Reload Function call
 			rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "/gkcore.reload - Reload Gamekeller Core Plugin" ) .. "\"" )
@@ -588,12 +591,13 @@ function PLUGIN:changeTimeZone( netUser, cmd, args )
 end
 
 -- EasyPlayerList MaxPlayersPerLine
-function PLUGIN:changeTimeZone( netUser, cmd, args )
+function PLUGIN:eplMaxPlayersPerLine( netUser, cmd, args )
 	if (netUser:CanAdmin()) then
+		args[1] = tonumber(args[1])
 		if (args[1] and (args[1] >= 1 and args[1] <= 10)) then
-			self.settingsText["EasyPlayerList"]["MaxPlayersPerLine"] = args[1]
+			self.settingsText["EasyPlayerList"]["maxPlayersPerLine"] = args[1]
 			self:SaveSettings()
-			rust.Notice( netUser, "EasyPlayerList max players per line changed to" .. args[1] .. "." )
+			rust.Notice( netUser, "EasyPlayerList max players per line changed to " .. args[1] .. "." )
 		else
 			rust.Notice( netUser, "Syntax: /list.ppl \"number between 1 and 10\" " )
 		end
