@@ -1,6 +1,6 @@
 PLUGIN.Title		= "Gamekeller Core Plugin"
-PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerList, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, CoreReloader, MotD, BaseAttackAlert, DeathLog, ChatLog"
-PLUGIN.Version		= "1.13.02"
+PLUGIN.Description	= "This is a Server Core Plugin which includes: EasyPlayerList, EasyAdminRights, EasyServerSaver, RustClock, Help, AdminHelp, MotD, BaseAttackAlert, DeathLog, ChatLog"
+PLUGIN.Version		= "1.13.03"
 PLUGIN.Author		= "Gamekeller"
 print("-----------------------")
 print( "Loading " .. PLUGIN.Title .. " Version: " .. PLUGIN.Version .. " by " .. PLUGIN.Author .. "..." )
@@ -118,11 +118,6 @@ function PLUGIN:Init()
 	-- Change ChatName Chat Command
 	self:AddChatCommand("chatname", self.changeChatName)
 
-	-- CoreReloader Console Command
-	self:AddCommand("gkcore", "reload", self.consoleCommandReload)
-	-- CoreReloader Chat Command
-	self:AddChatCommand("gkcore.reload", self.chatCommandReload)
-
 	-- BaseAttackAlert Chat Command
 	self:AddChatCommand("baa.enable", self.enableBaseAttackAlert)
 	self:AddChatCommand("baa.disable", self.disableBaseAttackAlert)
@@ -199,29 +194,6 @@ function PLUGIN:Init()
 	-- Server Time Zone Correction for Log Files
 	self:AddChatCommand("timezone", self.changeTimeZone)
 end
-
--- Reloads the plugin via console
-function PLUGIN:consoleCommandReload( arg )
-	local user = arg.argUser
-	if (user and not user:CanAdmin()) then
-		rust.Notice(arg.argUser, "You do not have permission to use this command!")
-		return
-	end
-	cs.reloadplugin(self.Name)
-	rust.Notice(arg.argUser, "Gamekeller Core reloaded.")
-end
-
--- Reloads the plugin via chat
-function PLUGIN:chatCommandReload( netUser )
-	if (not(netUser:CanAdmin())) then
-		rust.Notice(netUser, "You do not have permission to use this command!")
-		return
-	end
-	cs.reloadplugin(self.Name)
-	rust.Notice(netUser, "Gamekeller Core reloaded.")
-end
-functioncounter = functioncounter + 1
-print( functioncounter .. " - CoreReload function loaded..." )
 
 -- PLUGINS WITH Commands
 -- Help Message
@@ -322,7 +294,7 @@ function PLUGIN:EasyPluginList( netUser, cmd, args )
 	local maxplugins = 5
 	local plugincounter = 0
 	local pluginlist = ""
-	local plugins = 0
+	local pluginscount = 0
 	local pluginmsg = ""
 	if (self.settingsText["EasyPlayerList"]["enabled"] == "true") then
 		pluginlist = pluginlist .. "EasyPlayerList" .. ","
@@ -345,8 +317,21 @@ function PLUGIN:EasyPluginList( netUser, cmd, args )
 		plugincounter = plugincounter + 1
 	end
 
-	pluginlist = pluginlist .. "DoorShare"
-	plugincounter = plugincounter + 1
+	doorshareplugin = plugins.Find("doorshare")
+	statsplugin = plugins.Find("stats")
+	lootspawnlistsplugins = plugins.Find("lootspawnlists")
+	if (doorshareplugin.Name ~= nil) then
+		pluginlist = pluginlist .. doorshareplugin.Title .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (statsplugin.Name ~= nil) then
+		pluginlist = pluginlist .. statsplugin.Title .. ","
+		plugincounter = plugincounter + 1
+	end
+	if (lootspawnlistsplugins.Name ~= nil) then
+		pluginlist = pluginlist .. lootspawnlistsplugins.Title .. ","
+		plugincounter = plugincounter + 1
+	end
 
 	if (netUser:CanAdmin()) then
 		local adminpluginlist = ""
@@ -374,6 +359,8 @@ function PLUGIN:EasyPluginList( netUser, cmd, args )
 		if (adminpluginlist ~= "") then
 			pluginlist = pluginlist .. "," .. adminpluginlist
 			pluginlist = string.sub(pluginlist,1,string.len(pluginlist)-1)
+		else
+			pluginlist = string.sub(pluginlist,1,string.len(pluginlist)-1)
 		end
 	end
 
@@ -382,14 +369,14 @@ function PLUGIN:EasyPluginList( netUser, cmd, args )
 	if(plugincounter >= 1) then
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. plugincounter .. " Active Plugin(s):\"" )
 		for i=1, plugincounter, 1 do
-			if(plugins < maxplugins) then
+			if(pluginscount < maxplugins) then
 				pluginmsg = pluginmsg .. util.QuoteSafe(pluginlist[i]) .. ", "
-				plugins = plugins + 1
+				pluginscount = pluginscount + 1
 			else
 				pluginmsg = string.sub(pluginmsg,1,string.len(pluginmsg)-2)
 				rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( pluginmsg ) .. "\"" )
 				pluginmsg = util.QuoteSafe(pluginlist[i] .. ", ")
-				plugins = 1
+				pluginscount = 1
 			end
 		end
 		pluginmsg = string.sub(pluginmsg,1,string.len(pluginmsg)-2)
@@ -425,6 +412,7 @@ function PLUGIN:OnUserConnect( netUser )
 			rust.BroadcastChat(self.settingsText["PluginSettings"]["chatName"], "Player " .. netUser.displayName .. " joined the server.")
 		end
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Welcome " .. netUser.displayName .. "!" ) .. "\"" )
+		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "SERVER RESTARTS EVERY DAY AT 04:00 CET!!!" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Server Settings:" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "DoorShare, EasyPlayerList, RustClock, BaseAttackAlert, MotD" ) .. "\"" )
 		rust.RunClientCommand(netUser, "chat.add \"" .. util.QuoteSafe( self.settingsText["PluginSettings"]["chatName"] ) .. "\" \"" .. util.QuoteSafe( "Airdrops at 8 Players, Sleepers On, Commands /help" ) .. "\"" )
@@ -696,18 +684,14 @@ function PLUGIN:OnKilled( takedamage, damage )
 		local time = self:getTime()
 
 		if (takedamage:GetComponent("HumanController")) then
-			if (damage.victim.client.netUser.displayName) then
-				if (damage.victim.client.netUser.displayName == damage.attacker.client.netUser.displayName) then
+			if (damage.victim.client and damage.attacker.client) then
+				local suicide = (damage.victim.client == damage.attacker.client)
+				
+				if (damage.victim.client.netUser.displayName and not suicide) then
+					message = damage.victim.client.netUser.displayName .. " was killed by " .. damage.attacker.client.netUser.displayName
+				elseif (suicide) then
 					message = damage.victim.client.netUser.displayName .. " has commited suicide"
 				else
-					if (damage.victim.client.netUser.displayName ~= damage.attacker.client.netUser.displayName) then
-						message = damage.victim.client.netUser.displayName .. " was killed by " .. damage.attacker.client.netUser.displayName
-					else
-						return
-					end
-				end
-				
-				if (message == "") then
 					message = damage.victim.client.netUser.displayName .. " died otherwise"
 				end
 
